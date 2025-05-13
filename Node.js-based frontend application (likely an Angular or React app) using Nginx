@@ -1,0 +1,55 @@
+Step-by-Step Explanation:
+1. Multi-Stage Build — First Stage: build
+Dockerfile
+FROM node:18.13.0 as build
+
+This line sets the base image for the build stage to node:18.13.0.
+
+Node.js is required to install dependencies and build the frontend application.
+
+WORKDIR /app
+Sets the working directory inside the container to /app.
+
+COPY package*.json ./
+Copies package.json and optionally package-lock.json to the container.
+
+These files are needed to install dependencies.
+
+RUN npm install
+Installs all required Node.js packages defined in package.json.
+
+COPY . .
+Copies the rest of your project files into the container.
+
+RUN npm run build --prod
+Builds the production version of the frontend app.
+
+The output is usually placed in a build/ or dist/ folder inside the project.
+
+This is specific to the frontend framework being used.
+
+2. Second Stage — Runtime with Nginx
+FROM nginx:latest
+Starts a new stage using the official Nginx image to serve static files.
+
+COPY --from=build app/build /usr/share/nginx/html
+Copies the build output from the previous stage into Nginx’s default static file serving directory.
+
+⚠️ Note: You might need to adjust this path depending on your framework:
+
+For Angular: dist/<project-name>
+
+For React: build
+
+EXPOSE 80
+Informs Docker that the container listens on port 80 (HTTP), which is the default port Nginx uses.
+
+Summary:
+This Dockerfile does the following:
+
+Builds the frontend application using Node.js.
+
+Packages the production build with Nginx.
+
+Serves the app via Nginx on port 80.
+
